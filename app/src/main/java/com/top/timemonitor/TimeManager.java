@@ -1,6 +1,8 @@
 package com.top.timemonitor;
 
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -8,7 +10,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * <code>
  *  继承{@link IUnit}实现coastTime方法 设置方法监控时长
  *   TimeManager intance = TimeManager.getIntance();
- *   intance.put(IUnit);
+ *   intance.put(IUnit,long);
  * </code>
  * </pre>
  *
@@ -17,7 +19,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public class TimeManager {
 
-    private static final ConcurrentHashMap<String, IUnit> TT_MAP = new ConcurrentHashMap<>();
+    private static final List<IUnit> TT_LIST = Collections.synchronizedList(new ArrayList<IUnit>());
     /**
      * 状态 true 运行  false 没有运行
      */
@@ -39,14 +41,20 @@ public class TimeManager {
         return InnerClass.instance;
     }
 
-    public void put(IUnit unit) {
+    /**
+     * 增加监控对象
+     * @param unit 监控对象
+     * @param time 监控时间
+     */
+    public void put(IUnit unit, long time) {
         if (unit == null) {
             return;
         }
-        TT_MAP.put(unit.getID(), unit);
-        if (unit.coastTime() > 0) {
+        if (time > 0) {
+            long expire = time + System.currentTimeMillis();
+            unit.expireTime = expire;
+            TT_LIST.add(unit);
             //对unit过期时间设置
-            long expire = unit.coastTime();
             if (mMinTime > expire) {
                 //最短时间更改
                 mMinTime = expire;
@@ -68,7 +76,7 @@ public class TimeManager {
             if (!STATUS.get()) {
                 return;
             }
-            while (mMinTime == Long.MAX_VALUE || TT_MAP.size() > 0) {
+            while (mMinTime == Long.MAX_VALUE || TT_LIST.size() > 0) {
                 long millions = mMinTime - System.currentTimeMillis();
 
                 if (millions > 0) {
@@ -83,10 +91,10 @@ public class TimeManager {
                 //遍历  停止过期的unit 找到下一个时间点
                 long min = Long.MAX_VALUE;
                 long now = System.currentTimeMillis();
-                for (IUnit unit : TT_MAP.values()) {
+                for (IUnit unit : TT_LIST) {
                     if (!unit.isFinish()) {
                         //没有停止
-                        long time = unit.coastTime();
+                        long time = unit.expireTime;
                         if (time > 0) {
                             if (time - now > 0) {
                                 //没有过期
@@ -96,9 +104,6 @@ public class TimeManager {
                                 unit.end();
                             }
                         }
-                    } else {
-                        //停止
-
                     }
                 }
                 mMinTime = min;

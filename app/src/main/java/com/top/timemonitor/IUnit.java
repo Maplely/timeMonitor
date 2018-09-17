@@ -3,32 +3,30 @@ package com.top.timemonitor;
 /**
  * Created by lihaitao on 2018/9/17.
  */
-public interface IUnit {
+public abstract class IUnit {
+    public long expireTime;
+    private boolean flag=false;
     /**
      * 开始执行
      */
-    void start();
+    void start() {
+        flag=false;
+    }
 
     /**
      * 结束动作
      */
-    void end();
+    void end() {
+        flag=true;
+    }
 
     /**
      * 是否结束
+     *
      * @return true 已经结束 false 没有结束
      */
-    boolean isFinish();
+    boolean isFinish() {
+        return flag;
+    }
 
-    /**
-     * 过期时间
-     * @return 过期的时间 单位ms
-     */
-    long coastTime();
-
-    /**
-     * 唯一标识
-     * @return unitID
-     */
-    String getID();
 }

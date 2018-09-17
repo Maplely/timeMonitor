@@ -11,13 +11,11 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         AUnit aUnit = new AUnit();
-        aUnit.setTime(System.currentTimeMillis()+500);
         BUnit bUnit = new BUnit();
-        bUnit.setTime(System.currentTimeMillis()+300);
         TimeManager intance = TimeManager.getIntance();
-        intance.put(aUnit);
-        Log.e("TTT","MainActivity->onCreate:"+System.currentTimeMillis());
-        intance.put(bUnit);
-        Log.e("TTT","MainActivity->onCreate:"+System.currentTimeMillis());
+        intance.put(aUnit,1000);
+        Log.e("TTT","aaaaaaa"+System.currentTimeMillis());
+        intance.put(bUnit,200);
+        Log.e("TTT","bbbbbbbbbbb"+System.currentTimeMillis());
     }
 }
